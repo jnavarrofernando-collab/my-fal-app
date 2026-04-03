@@ -15,7 +15,7 @@ api_key = st.text_input("Enter Fal.ai API Key:", type="password")
 uploaded_file = st.file_uploader("Upload 3D Massing (JPEG/PNG)", type=["jpg", "jpeg", "png"])
 
 # 3. Design Prompt
-prompt = st.text_area("Design Style:", value="Modern tropical residential, dusk lighting, warm wood, concrete, hyperrealistic")
+prompt = st.text_area("Design Style:", value="Modern tropical architecture, dusk lighting, warm wood and concrete, hyperrealistic, high-end residential photography")
 
 # --- ENGINE ---
 if st.button("Generate Proposal"):
@@ -24,35 +24,32 @@ if st.button("Generate Proposal"):
     elif uploaded_file is None:
         st.warning("Please upload an image.")
     else:
-        st.info("The cloud is rendering... Your laptop is safe.")
+        st.info("The cloud is rendering... Your Acer is resting.")
         os.environ["FAL_KEY"] = api_key
         
-        # Convert image for the cloud
+        # Format the image
         bytes_data = uploaded_file.getvalue()
         base64_str = base64.b64encode(bytes_data).decode('utf-8')
         image_uri = f"data:image/jpeg;base64,{base64_str}"
         
         try:
-            # SWITCHED TO .run() FOR MAXIMUM COMPATIBILITY
+            # Using the 'Fast SDXL' model - much more stable for this setup
             result = fal_client.run(
-                "fal-ai/sdxl-controlnet-union/image-to-image",
+                "fal-ai/fast-sdxl/controlnet",
                 arguments={
                     "prompt": prompt,
-                    "image_url": image_uri,
-                    "strength": 0.95
+                    "control_image_url": image_uri,
+                    "controlnet_type": "canny", # This "enables" the ControlNet
+                    "image_size": "landscape_4_3"
                 }
             )
             
-            # SAFE IMAGE CHECK
-            if 'image' in result:
-                st.success("Generation Complete!")
-                st.image(result['image']['url'], caption="AI Generated Proposal")
-            elif 'images' in result and len(result['images']) > 0:
+            if 'images' in result and len(result['images']) > 0:
                 st.success("Generation Complete!")
                 st.image(result['images'][0]['url'], caption="AI Generated Proposal")
             else:
                 st.error("No image found in the response.")
-                st.write(result) # This helps us see what the AI actually sent back
+                st.write(result)
             
         except Exception as e:
             st.error(f"Engine Error: {e}")
