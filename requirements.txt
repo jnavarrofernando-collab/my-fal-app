@@ -1,2 +1,2 @@
 streamlit
-fal-client>=0.4.0
+fal-client==0.4.2
