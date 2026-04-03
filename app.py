@@ -1,6 +1,4 @@
-import streamlit as st
-Enter "help" below or click "Help" above for more information.
->>> import streamlit as st
+... import streamlit as st
 ... import fal_client
 ... import os
 ... import base64
