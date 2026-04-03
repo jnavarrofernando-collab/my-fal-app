@@ -6,7 +6,7 @@ import base64
 # --- APP INTERFACE ---
 st.set_page_config(page_title="Design Partner", layout="centered")
 st.title("Joseph's Architectural AI")
-st.markdown("Upload a SketchUp white-box massing to generate a high-end proposal.")
+st.markdown("Upload a SketchUp massing to generate a high-end proposal.")
 
 # 1. API Key Input
 api_key = st.text_input("Enter Fal.ai API Key:", type="password")
@@ -33,8 +33,8 @@ if st.button("Generate Proposal"):
         image_uri = f"data:image/jpeg;base64,{base64_str}"
         
         try:
-            # We are using the "Union" model—the best for architectural lines
-            result = fal_client.subscribe(
+            # SWITCHED TO .run() FOR MAXIMUM COMPATIBILITY
+            result = fal_client.run(
                 "fal-ai/sdxl-controlnet-union/image-to-image",
                 arguments={
                     "prompt": prompt,
@@ -43,20 +43,16 @@ if st.button("Generate Proposal"):
                 }
             )
             
-            # --- THE SELF-HEALING IMAGE CHECK ---
-            image_url = None
+            # SAFE IMAGE CHECK
             if 'image' in result:
-                image_url = result['image']['url']
-            elif 'images' in result and len(result['images']) > 0:
-                image_url = result['images'][0]['url']
-                
-            if image_url:
                 st.success("Generation Complete!")
-                st.image(image_url, caption="AI Generated Proposal")
+                st.image(result['image']['url'], caption="AI Generated Proposal")
+            elif 'images' in result and len(result['images']) > 0:
+                st.success("Generation Complete!")
+                st.image(result['images'][0]['url'], caption="AI Generated Proposal")
             else:
-                st.error("The AI generated the data, but no image was found. Possible Safety Filter trigger.")
-                with st.expander("Debug Report (Show this to Gemini)"):
-                    st.write(result)
+                st.error("No image found in the response.")
+                st.write(result) # This helps us see what the AI actually sent back
             
         except Exception as e:
             st.error(f"Engine Error: {e}")
