@@ -3,7 +3,7 @@ import fal_client
 import os
 import base64
 
-# --- THE APP INTERFACE ---
+# --- THE INTERFACE ---
 st.set_page_config(page_title="Design Partner", layout="centered")
 st.title("Joseph's Architectural AI")
 st.markdown("Upload a SketchUp massing to generate a high-end proposal.")
@@ -28,22 +28,25 @@ if st.button("Generate Proposal"):
         image_uri = f"data:image/jpeg;base64,{base64_str}"
         
         try:
-            # Verified Path: fal-ai/flux/canny
-            # This is the gold standard for architects in 2026.
+            # Using the most stable model ID available
             result = fal_client.subscribe(
-                "fal-ai/flux/canny",
+                "fal-ai/sdxl-controlnet",
                 arguments={
                     "prompt": prompt,
                     "control_image_url": image_uri,
+                    "controlnet_type": "canny",
                     "image_size": "landscape_4_3"
                 }
             )
             
-            if 'image' in result:
+            if 'images' in result and len(result['images']) > 0:
+                st.success("Success!")
+                st.image(result['images'][0]['url'], caption="AI Generated Proposal")
+            elif 'image' in result:
                 st.success("Success!")
                 st.image(result['image']['url'], caption="AI Generated Proposal")
             else:
-                st.error("No image found. Check output.")
+                st.error("No image found in response.")
                 st.write(result)
                 
         except Exception as e:
