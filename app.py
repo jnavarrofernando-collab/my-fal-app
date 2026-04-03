@@ -26,13 +26,16 @@ if st.button("Generate Proposal"):
     else:
         st.info("Processing in the cloud... Your laptop is resting.")
         
+        # Set the environment key
         os.environ["FAL_KEY"] = api_key
         
+        # Convert uploaded image to a format the cloud can read
         bytes_data = uploaded_file.getvalue()
         base64_str = base64.b64encode(bytes_data).decode('utf-8')
         image_uri = f"data:image/jpeg;base64,{base64_str}"
         
         try:
+            # Send to Fal.ai using the SDXL ControlNet model
             result = fal_client.subscribe(
                 "fal-ai/sdxl-controlnet-union/image-to-image",
                 arguments={
@@ -43,6 +46,7 @@ if st.button("Generate Proposal"):
                 }
             )
             
+            # Show the result
             st.success("Generation Complete!")
             st.image(result['image']['url'], caption="AI Generated Proposal")
             
