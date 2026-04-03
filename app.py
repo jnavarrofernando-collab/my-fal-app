@@ -25,16 +25,18 @@ if st.button("Generate Proposal"):
         st.warning("Please upload an image.")
     else:
         st.info("The cloud is rendering... Your laptop is resting.")
+        
+        # Set the API Key
         os.environ["FAL_KEY"] = api_key
         
-        # Format the image for the cloud
+        # Format the image
         bytes_data = uploaded_file.getvalue()
         base64_str = base64.b64encode(bytes_data).decode('utf-8')
         image_uri = f"data:image/jpeg;base64,{base64_str}"
         
         try:
-            # Using .run() instead of .subscribe() for maximum compatibility
-            result = fal_client.run(
+            # We use .subscribe()—it's the most reliable for these models
+            result = fal_client.subscribe(
                 "fal-ai/sdxl-controlnet-union/image-to-image",
                 arguments={
                     "prompt": prompt,
@@ -45,12 +47,7 @@ if st.button("Generate Proposal"):
             )
             
             st.success("Generation Complete!")
-            
-            # Show the result
-            if 'image' in result:
-                st.image(result['image']['url'], caption="AI Generated Proposal")
-            elif 'images' in result:
-                st.image(result['images'][0]['url'], caption="AI Generated Proposal")
+            st.image(result['image']['url'], caption="AI Generated Proposal")
             
         except Exception as e:
             st.error(f"Error: {e}")
