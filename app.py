@@ -6,9 +6,9 @@ import base64
 # --- THE APP INTERFACE ---
 st.set_page_config(page_title="Design Partner", layout="centered")
 st.title("Joseph's Architectural AI")
-st.markdown("Upload a SketchUp massing to generate a signature render.")
+st.markdown("Upload a SketchUp massing to generate a high-end proposal.")
 
-# 1. Ask for the Fal API Key
+# 1. API Key Input
 api_key = st.text_input("Enter Fal.ai API Key:", type="password")
 
 # 2. File Uploader
@@ -33,21 +33,20 @@ if st.button("Generate Proposal"):
         image_uri = f"data:image/jpeg;base64,{base64_str}"
         
         try:
-            # Using the absolute latest stable Canny model
-            result = fal_client.subscribe(
-                "fal-ai/flux/canny",
+            # Using a very stable, older model path that rarely changes
+            result = fal_client.run(
+                "fal-ai/sdxl-controlnet",
                 arguments={
                     "prompt": prompt,
                     "control_image_url": image_uri,
-                    "image_size": "landscape_4_3",
-                    "num_inference_steps": 28,
-                    "guidance_scale": 3.5
+                    "controlnet_type": "canny",
+                    "image_size": "landscape_4_3"
                 }
             )
             
-            if 'image' in result:
+            if 'images' in result and len(result['images']) > 0:
                 st.success("Generation Complete!")
-                st.image(result['image']['url'], caption="AI Generated Proposal")
+                st.image(result['images'][0]['url'], caption="AI Generated Proposal")
             else:
                 st.error("No image found. Check the output below.")
                 st.write(result)
